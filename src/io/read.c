@@ -13,7 +13,9 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	int inNode, outNode;
 	char line[16];
 	char operation;
-	pathNode *path;
+	int pathLength;
+	queue forwardQueue, backwardQueue;
+	BFSVisitedData visited;
 
 	while(1)
 	{	
@@ -32,6 +34,10 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 
 	}
 
+	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
+	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
+	initializeVisited(&visited, outIndex->arraySize);
+
 	while(1)
 	{
 		if(scanf("%s", line) < 0)
@@ -46,9 +52,9 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
-				path = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode);
+				pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
 
-				printf("%d\n", pathLength(path));
+				printf("%d\n", pathLength);
 			}
 			else if(operation == 'A')
 			{

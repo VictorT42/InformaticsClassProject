@@ -25,6 +25,6 @@ HashTablesArray *createHashTablesArray();
 
 OK_SUCCESS insertEdgeToHash(HashTablesArray *hashStruct, ptr outNode, ptr inNode);
 
-void destroyHashTables(HashTableArray *hashStruct);
+void destroyHashTables(HashTablesArray *hashStruct);
 
 #endif

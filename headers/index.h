@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "structs.h"
 #include "buffer.h"
+#include "hash.h"
 
 #define INITIAL_INDEX_SIZE 3
 

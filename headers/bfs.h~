@@ -24,6 +24,6 @@ void deleteBFS(int *forwardParentArray, int *backwardParentArray, queue *forward
 
 OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size);
 void deleteVisited(BFSVisitedData *visited);
-OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, node *listNode);
+OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, node listNode);
 
 #endif

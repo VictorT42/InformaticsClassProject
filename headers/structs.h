@@ -42,10 +42,18 @@ typedef struct queueNode
 	struct queueNode *previous;
 } queueNode;
 
-typedef struct queue
+/* typedef struct queue
 {
 	queueNode *start;
 	queueNode *end;
+} queue; */
+
+typedef struct queue
+{
+	int *array;
+	int size;
+	ptr start;	//first node
+	ptr end;	//first empty space in array
 } queue;
 
 typedef struct pathNode
@@ -54,6 +62,14 @@ typedef struct pathNode
 	struct pathNode *previous;
 	struct pathNode *next;
 } pathNode;
+
+typedef struct BFSVisitedData
+{
+	int *fVisited;
+	int *bVisited;
+	int arraySize;
+	int roundCounter;
+} BFSVisitedData;
 
 typedef struct HashTablesArray
 {

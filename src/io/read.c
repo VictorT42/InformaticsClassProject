@@ -13,7 +13,9 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	int inNode, outNode;
 	char line[16];
 	char operation;
-	pathNode *path;
+	int pathLength;
+	queue forwardQueue, backwardQueue;
+	BFSVisitedData visited;
 
 	while(1)
 	{	
@@ -30,7 +32,11 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 
 		add(outBuffer, inBuffer, outIndex, inIndex, hashStruct, outNode, inNode);
 
-	}
+	}fprintf(stderr,"Done with graph\n");
+
+	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
+	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
+	initializeVisited(&visited, outIndex->arraySize);
 
 	while(1)
 	{
@@ -46,9 +52,12 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
-				path = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode);
+				cleanQueue(&forwardQueue);
+				cleanQueue(&backwardQueue);
 
-				printf("%d\n", pathLength(path));
+				pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
+
+				printf("%d\n", pathLength);
 			}
 			else if(operation == 'A')
 			{
@@ -60,6 +69,10 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			}
 		}
 	}
+
+	deleteVisited(&visited);
+	deleteQueue(&forwardQueue);
+	deleteQueue(&backwardQueue);
 	
 }
 

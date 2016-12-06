@@ -32,7 +32,7 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 
 		add(outBuffer, inBuffer, outIndex, inIndex, hashStruct, outNode, inNode);
 
-	}
+	}fprintf(stderr,"Done with graph\n");
 
 	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
 	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
@@ -52,6 +52,12 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
+				cleanQueue(&forwardQueue);
+				cleanQueue(&backwardQueue);
+
+				if(outNode == 167343 && inNode == 168823)
+					puts("here");
+
 				pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
 
 				printf("%d\n", pathLength);

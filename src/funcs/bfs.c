@@ -29,9 +29,18 @@ void push(queue *q, int nodeID)
 	q->array[q->end]=nodeID;
 	
 	if((q->end == q->start-1) || (q->end==q->size && q->start==0)){
-		//Grow
-		printf("NEEDS TO GROW\n");
-		fflush(stdout);
+
+		int newSize = q->size*2;
+
+		printf("GROWING\n");
+
+		q->array = realloc(q->array, newSize*sizeof(int));
+
+		if(q->end < q->start)
+		{
+			memcpy(q->array + q->size, q->array, q->end*sizeof(int));
+			q->end = q->start + q->end +1;
+		}
 	}
 	
 	q->end++;
@@ -48,8 +57,8 @@ int pop(queue *q)
 
 	if(q->start == q->end)
 	{
-		printError(QUEUE_POP_FAIL);
-		return -1;
+	//	printError(QUEUE_POP_FAIL);
+		return -2;
 	}
 	else
 	{
@@ -87,11 +96,36 @@ void deleteVisited(BFSVisitedData *visited)
 	free(visited->bVisited);
 }
 
+void printQueue(queue *q)
+{
+	int i;
+		
+	for(i=q->start;i<q->end;i++)
+		printf("%d->",q->array[i]);
+	printf("\b\b  \n");
+}
+
+void cleanQueue(queue *q)
+{
+	q->start=0;
+	q->end=0;
+}
+
+int emptyQueue(queue *q)
+{
+
+	if((q->end == 0) && (q->start == q->size-1))
+		return 1;
+	if((q->start!= q->size-1) && (q->start + 1 == q->end))
+		return 1;
+	return 0;
+}
+
 int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal, BFSVisitedData *visited, queue *forwardQueue, queue *backwardQueue)
 {
 	node *fListNode, *bListNode;
 	int curForwardID, curBackwardID;
-	int fPathLength = -1, bPathLength = -1;
+	int fPathLength = 0, bPathLength = 0,i;
 
 	if(outIndex->arraySize > visited->arraySize)
 	{
@@ -99,10 +133,15 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 		initializeVisited(visited, outIndex->arraySize);
 	}
 
+	visited->roundCounter++;
+
 	push(forwardQueue, start);
 	push(forwardQueue, DEPTH);
 	push(backwardQueue, goal);
 	push(backwardQueue, DEPTH);
+
+	visited->fVisited[start] = visited->roundCounter;
+	visited->bVisited[goal] = visited->roundCounter;
 	
 	while(1)
 	{
@@ -112,28 +151,37 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 		{
 			fPathLength++;
 			push(forwardQueue, DEPTH);
-			continue;
 		}
-		fListNode = getListNode(outBuffer, getListHead(outIndex, curForwardID));
-
-		while((fListNode->neighborCounter == N) && (fListNode->nextListNode != -1))
+		else
 		{
-			if(checkNeighbors(visited, forwardQueue, 'f', fListNode) == YES)
+			fListNode = getListNode(outBuffer, getListHead(outIndex, curForwardID));
+
+			while((fListNode->neighborCounter == N) && (fListNode->nextListNode != -1))
 			{
+				if((i=checkNeighbors(visited, forwardQueue, 'f', fListNode)) != -1)
+				{
+					while((curBackwardID=pop(backwardQueue))!=i && curBackwardID!=-2)
+					{
+						if(curBackwardID==DEPTH) fPathLength++;
+					}
+					return fPathLength + bPathLength + 1;
+				}
+				fListNode = getListNode(outBuffer,fListNode->nextListNode);
+			}
+
+			if((i=checkNeighbors(visited, forwardQueue, 'f', fListNode)) != -1)
+			{
+				while((curBackwardID=pop(backwardQueue))!=i && curBackwardID!=-2){
+					if(curBackwardID==DEPTH) fPathLength++;}
 				return fPathLength + bPathLength + 1;
 			}
-			fListNode = getListNode(outBuffer,fListNode->nextListNode);
 		}
 
-		if(checkNeighbors(visited, forwardQueue, 'f', fListNode) == YES)
+		if(emptyQueue(forwardQueue))
 		{
-			return fPathLength + bPathLength + 1;
+		return -1;
 		}
-
-		if(forwardQueue->start == forwardQueue->end)
-		{
-			return -1;
-		}
+		
 		
 		//Backward BFS
 		curBackwardID = pop(backwardQueue);
@@ -141,25 +189,31 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 		{
 			bPathLength++;
 			push(backwardQueue, DEPTH);
-			continue;
 		}
-		bListNode = getListNode(outBuffer, getListHead(outIndex, curBackwardID));
-
-		while((bListNode->neighborCounter == N) && (bListNode->nextListNode != -1))
+		else
 		{
-			if(checkNeighbors(visited, backwardQueue, 'b', bListNode) == YES)
+			bListNode = getListNode(inBuffer, getListHead(inIndex, curBackwardID));
+
+			while((bListNode->neighborCounter == N) && (bListNode->nextListNode != -1))
 			{
+				if((i=checkNeighbors(visited, backwardQueue, 'b', bListNode)) !=-1)
+				{
+					while((curForwardID=pop(forwardQueue))!=i && curForwardID!=-2){
+						if(curForwardID==DEPTH) bPathLength++;}
+					return fPathLength + bPathLength + 1;
+				}
+				bListNode = getListNode(inBuffer,bListNode->nextListNode);
+			}
+
+			if((i=checkNeighbors(visited, backwardQueue, 'b', bListNode)) !=-1)
+			{
+				while((curForwardID=pop(forwardQueue))!=i && curForwardID!=-2){
+					if(curForwardID==DEPTH) bPathLength++;}
 				return fPathLength + bPathLength + 1;
 			}
-			bListNode = getListNode(outBuffer,bListNode->nextListNode);
 		}
 
-		if(checkNeighbors(visited, backwardQueue, 'b', bListNode) == YES)
-		{
-			return fPathLength + bPathLength + 1;
-		}
-
-		if(backwardQueue->start == backwardQueue->end)
+		if(emptyQueue(backwardQueue))
 		{
 			return -1;
 		}
@@ -197,11 +251,11 @@ OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, nod
 
 		if(backwardArray[listNode->neighbor[i]] == visited->roundCounter)
 		{
-			return YES;
+			return listNode->neighbor[i];
 		}
 	}
 
-	return NO;
+	return -1;
 
 }
 

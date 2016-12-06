@@ -10,7 +10,7 @@
 //#define UNVISITED -1
 //#define END_NODE -2
 
-#define INITIAL_QUEUE_SIZE 10000000
+#define INITIAL_QUEUE_SIZE 1000000
 #define DEPTH -1
 
 OK_SUCCESS initializeQueue(queue *q, int size);

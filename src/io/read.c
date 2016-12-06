@@ -55,9 +55,6 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 				cleanQueue(&forwardQueue);
 				cleanQueue(&backwardQueue);
 
-				if(outNode == 167343 && inNode == 168823)
-					puts("here");
-
 				pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
 
 				printf("%d\n", pathLength);
@@ -72,6 +69,10 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			}
 		}
 	}
+
+	deleteVisited(&visited);
+	deleteQueue(&forwardQueue);
+	deleteQueue(&backwardQueue);
 	
 }
 

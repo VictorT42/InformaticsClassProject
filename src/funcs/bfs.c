@@ -103,15 +103,17 @@ void printQueue(queue *q)
 	for(i=q->start;i<q->end;i++)
 		printf("%d->",q->array[i]);
 	printf("\b\b  \n");
+	return;
 }
 
 void cleanQueue(queue *q)
 {
 	q->start=0;
 	q->end=0;
+	return;
 }
 
-int emptyQueue(queue *q)
+int isEmptyQueue(queue *q)
 {
 
 	if((q->end == 0) && (q->start == q->size-1))
@@ -119,6 +121,12 @@ int emptyQueue(queue *q)
 	if((q->start!= q->size-1) && (q->start + 1 == q->end))
 		return 1;
 	return 0;
+}
+
+void deleteQueue(queue *q)
+{
+	free(q->array);
+	return;
 }
 
 int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal, BFSVisitedData *visited, queue *forwardQueue, queue *backwardQueue)
@@ -147,12 +155,7 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 	{
 		//Forward BFS
 		curForwardID = pop(forwardQueue);
-		if(curForwardID == DEPTH)
-		{
-			fPathLength++;
-			push(forwardQueue, DEPTH);
-		}
-		else
+		while(curForwardID != DEPTH)
 		{
 			fListNode = getListNode(outBuffer, getListHead(outIndex, curForwardID));
 
@@ -175,9 +178,15 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 					if(curBackwardID==DEPTH) fPathLength++;}
 				return fPathLength + bPathLength + 1;
 			}
+
+			curForwardID = pop(forwardQueue);
+
 		}
 
-		if(emptyQueue(forwardQueue))
+		fPathLength++;
+		push(forwardQueue, DEPTH);
+		
+		if(isEmptyQueue(forwardQueue))
 		{
 		return -1;
 		}
@@ -185,12 +194,7 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 		
 		//Backward BFS
 		curBackwardID = pop(backwardQueue);
-		if(curBackwardID == DEPTH)
-		{
-			bPathLength++;
-			push(backwardQueue, DEPTH);
-		}
-		else
+		while(curBackwardID != DEPTH)
 		{
 			bListNode = getListNode(inBuffer, getListHead(inIndex, curBackwardID));
 
@@ -211,9 +215,15 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 					if(curForwardID==DEPTH) bPathLength++;}
 				return fPathLength + bPathLength + 1;
 			}
+
+			curBackwardID = pop(backwardQueue);
+
 		}
 
-		if(emptyQueue(backwardQueue))
+		bPathLength++;
+		push(backwardQueue, DEPTH);
+
+		if(isEmptyQueue(backwardQueue))
 		{
 			return -1;
 		}

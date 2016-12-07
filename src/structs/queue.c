@@ -1,5 +1,6 @@
 //File queue.c
 
+#include <stdio.h>
 #include <string.h>
 #include "../../headers/bfs.h"
 #include "../../headers/print.h"

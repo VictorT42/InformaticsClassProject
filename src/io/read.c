@@ -7,6 +7,7 @@
 #include "../../headers/bfs.h"
 #include "../../headers/print.h"
 #include "../../headers/read.h"
+#include "../../headers/hash.h"
 
 void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *inIndex, HashTablesArray *hashStruct)
 {
@@ -81,6 +82,9 @@ void add(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *in
 {
 
 	entry *added;
+	
+	//Make sure the outcoming node has a corresponding hash table
+	insertNodeToHash(hashStruct, outNode);
 
 	//Check if this edge has already been added
 	added = findEntry(inNode, hashStruct->array[outNode]);
@@ -111,13 +115,14 @@ void add(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *in
 	{
 		insertNode(inIndex, inNode, inBuffer);
 	}
-
-	insertEdgeToHash(hashStruct, outNode, inNode);
 	
+	//Enter the nodes into the buffers
 	insertNeighbor(outIndex, outBuffer, outNode, inNode);
-
 	insertNeighbor(inIndex, inBuffer, inNode, outNode);
-		
+	
+	//Enter the edge into the corresponding hash table
+	addEntryToTable(hashStruct->array[outNode], NULL, inNode);
+	
 	return;
 
 }

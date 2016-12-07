@@ -5,9 +5,23 @@
 
 #include <stdio.h>
 
+//Added for this project...
+///////////////////////////
+#include "structs.h"
+#include "print.h"
+
 #define HASH_TABLE_BUCKET_ENTRIES 16
 #define HASH_TABLE_LOAD_FACTOR 0.75
-#define INITIAL_HASH_TABLE_SIZE 8
+#define INITIAL_HASH_TABLE_SIZE 16
+#define INITIAL_HASH_TABLE_ARRAY_SIZE 65536
+
+HashTablesArray *createHashTablesArray();
+
+OK_SUCCESS insertNodeToHash(HashTablesArray *hashStruct, ptr outNode);
+
+void destroyHashTables(HashTablesArray *hashStruct);
+///////////////
+//...up to here
 
 typedef struct HashTableEntry
 {

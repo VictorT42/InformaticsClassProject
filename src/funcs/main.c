@@ -5,6 +5,7 @@
 #include "../../headers/index.h"
 #include "../../headers/buffer.h"
 #include "../../headers/read.h"
+#include "../../headers/hash.h"
 
 int main(int argc, char *argv[])
 {

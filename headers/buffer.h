@@ -8,9 +8,7 @@
 #include "structs.h"
 #include "index.h"
 
-#define INITIAL_BUFFER_SIZE 3
-
-typedef int OK_SUCCESS;
+#define INITIAL_BUFFER_SIZE 65536
 
 Buffer *createBuffer();
 

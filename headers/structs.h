@@ -4,7 +4,6 @@
 #define STRUCTS
 
 #include <stdint.h>
-#include "hash.h"
 
 #define YES 1
 #define NO 0
@@ -12,6 +11,7 @@
 #define N 32
 
 typedef uint32_t ptr;
+typedef int OK_SUCCESS;
 
 typedef struct list_node
 {
@@ -35,19 +35,6 @@ typedef struct Buffer
 	node *list;
 } Buffer;
 
-typedef struct queueNode
-{
-	int nodeID;
-	struct queueNode *next;
-	struct queueNode *previous;
-} queueNode;
-
-/* typedef struct queue
-{
-	queueNode *start;
-	queueNode *end;
-} queue; */
-
 typedef struct queue
 {
 	int *array;
@@ -56,13 +43,6 @@ typedef struct queue
 	ptr end;	//first empty space in array
 } queue;
 
-typedef struct pathNode
-{
-	int nodeID;
-	struct pathNode *previous;
-	struct pathNode *next;
-} pathNode;
-
 typedef struct BFSVisitedData
 {
 	int *fVisited;
@@ -70,7 +50,7 @@ typedef struct BFSVisitedData
 	int arraySize;
 	int roundCounter;
 } BFSVisitedData;
-
+typedef struct HashTable table;
 typedef struct HashTablesArray
 {
 	table **array;

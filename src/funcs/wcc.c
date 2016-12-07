@@ -27,7 +27,7 @@ typedef struct UpdateIndex
 {
 	table *array;
 	int arraySize;
-} UpdateIndex
+} UpdateIndex;
 
 void initializeStack(stack *s)
 {
@@ -109,7 +109,7 @@ CC *estimateConnectedComponents(Buffer *outBuffer, NodeIndex *outIndex, Buffer *
 		{
 			(&dfsStack)->end = 0;
 			//DFS
-			push(&dfsStack, i);
+			stackPush(&dfsStack, i);
 
 			while((&dfsStack)->end != 0)
 			{

@@ -30,30 +30,6 @@ void printGraph(NodeIndex *index, Buffer *buffer)
 	return;
 }
 
-
-
-void printPath(pathNode *start)
-{
-	while(start != NULL)
-	{
-		if(start->next != NULL)
-		{
-			printf("%d -> ", start->nodeID);
-			start = start->next;
-			free(start->previous);
-		}
-		else
-		{
-			printf("%d\n", start->nodeID);
-			free(start);
-			return;
-		}
-		fflush(stdout);
-	}
-}
-
-
-
 void printError(int errorCode)
 {
 	switch(errorCode)

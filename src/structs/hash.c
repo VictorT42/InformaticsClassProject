@@ -4,6 +4,99 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//Added for this project...
+///////////////////////////
+HashTablesArray *createHashTablesArray()
+{
+
+	HashTablesArray *hashStruct;
+	int i;
+
+	hashStruct = malloc(sizeof(HashTablesArray));
+
+	if(hashStruct == NULL)
+	{
+		printError(HASH_TABLE_ALLOCATION_FAIL);
+		return NULL;
+	}
+
+	hashStruct->array = malloc(INITIAL_HASH_TABLE_ARRAY_SIZE*sizeof(table*));
+
+	if(hashStruct == NULL)
+	{
+		printError(HASH_TABLE_ALLOCATION_FAIL);
+		return NULL;
+	}
+
+	hashStruct->arraySize = INITIAL_HASH_TABLE_ARRAY_SIZE;
+
+	for(i = 0; i < INITIAL_HASH_TABLE_ARRAY_SIZE; i++)
+	{
+		hashStruct->array[i] = NULL;
+	}
+
+	return hashStruct;
+
+}
+
+OK_SUCCESS insertNodeToHash(HashTablesArray *hashStruct, ptr node)
+{
+
+	int expansionFlag = 0;
+	int previousArraySize;
+	int i;
+	
+	previousArraySize = hashStruct->arraySize;
+	while((node >= hashStruct->arraySize))
+	{
+		expansionFlag = 1;
+		hashStruct->arraySize = hashStruct->arraySize*2;
+	}
+	
+	if(expansionFlag == 1)
+	{
+	
+		hashStruct->array = realloc(hashStruct->array, hashStruct->arraySize*sizeof(table*));
+		
+		if(hashStruct->array == NULL)
+		{
+			printError(HASH_TABLE_REALLOCATION_FAIL);
+			return NO;
+		}
+		
+		for(i = previousArraySize; i < hashStruct->arraySize; i++)
+		{
+			hashStruct->array[i] = NULL;
+		}
+
+	}
+
+	if(hashStruct->array[node] == NULL)
+	{
+		hashStruct->array[node] = initializeHashTable(hashStruct->array[node], HASH_TABLE_BUCKET_ENTRIES, HASH_TABLE_LOAD_FACTOR, INITIAL_HASH_TABLE_SIZE);
+	}
+
+	return YES;
+
+}
+
+void destroyHashTables(HashTablesArray *hashStruct)
+{
+	int i;
+
+	for(i = 0; i < hashStruct->arraySize; i++)
+	{
+		deleteHash(hashStruct->array[i]);
+	}
+	
+	free(hashStruct->array);
+
+	free(hashStruct);
+
+}
+///////////////
+//...up to here
+
 table *initializeHashTable(table *ht, int be, float lf, int s)
 {
 	int i = 0;

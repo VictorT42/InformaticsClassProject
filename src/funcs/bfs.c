@@ -23,8 +23,8 @@ OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size)
 		return NO;
 	}
 
-	memset(visited->fVisited,0,size);
-	memset(visited->bVisited,0,size);
+	memset(visited->fVisited,0,size*sizeof(int));
+	memset(visited->bVisited,0,size*sizeof(int));
 
 	return YES;
 }

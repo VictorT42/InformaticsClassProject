@@ -22,7 +22,6 @@
 #define QUEUE_OUT_OF_BOUNDS_FAIL 14
 
 void printGraph(NodeIndex *index, Buffer *buffer);
-void printPath(pathNode *start);
 void printError(int);
 
 #endif

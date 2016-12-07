@@ -8,73 +8,8 @@
 #include "../../headers/bfs.h"
 #include "../../headers/print.h"
 
-OK_SUCCESS initializeQueue(queue *q, int size)
-{
-	q->array=malloc(size*sizeof(int));
-	if(q->array == NULL)
-	{
-		printError(QUEUE_ALLOCATION_FAIL);
-		return NO;
-	}
-	q->size=size;
-	q->start=0;
-	q->end=0;
-
-	return YES;
-}
-
-void push(queue *q, int nodeID)
-{
-	
-	q->array[q->end]=nodeID;
-	
-	if((q->end == q->start-1) || (q->end==q->size && q->start==0)){
-
-		int newSize = q->size*2;
-
-		printf("GROWING\n");
-
-		q->array = realloc(q->array, newSize*sizeof(int));
-
-		if(q->end < q->start)
-		{
-			memcpy(q->array + q->size, q->array, q->end*sizeof(int));
-			q->end = q->start + q->end +1;
-		}
-	}
-	
-	q->end++;
-	if(q->end == q->size){
-		q->end=0;
-	}
-	else if(q->end > (q->size)) printf("SOMETHING WENT HORRIBLY WRONG!\n");
-}
-
-int pop(queue *q)
-{
-	
-	int nodeID;
-
-	if(q->start == q->end)
-	{
-	//	printError(QUEUE_POP_FAIL);
-		return -2;
-	}
-	else
-	{
-		nodeID = q->array[q->start];
-		q->start++;
-		if(q->start==q->size){
-			q->start=0;
-		}
-		else if(q->start>q->size) printf("SOMETHING WENT HORRIBLY WRONG!\n");
-	}
-	
-	return nodeID;	
-	
-}
-
 OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size)
+//Initialize the BFS support sructure holding visited node information.
 {
 
 	visited->arraySize = size;
@@ -82,7 +17,11 @@ OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size)
 	visited->bVisited = malloc(size*sizeof(int));
 	visited->roundCounter = 0;
 
-	//TODO error checking
+	if(visited->fVisited == NULL || visited->bVisited == NULL)
+	{
+		printError(BFS_VISITED_DATA_FAIL);
+		return NO;
+	}
 
 	memset(visited->fVisited,0,size);
 	memset(visited->bVisited,0,size);
@@ -91,49 +30,18 @@ OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size)
 }
 
 void deleteVisited(BFSVisitedData *visited)
+//Release the allocated memory in the BFS support structure.
 {
 	free(visited->fVisited);
 	free(visited->bVisited);
 }
 
-void printQueue(queue *q)
-{
-	int i;
-		
-	for(i=q->start;i<q->end;i++)
-		printf("%d->",q->array[i]);
-	printf("\b\b  \n");
-	return;
-}
-
-void cleanQueue(queue *q)
-{
-	q->start=0;
-	q->end=0;
-	return;
-}
-
-int isEmptyQueue(queue *q)
-{
-
-	if((q->end == 0) && (q->start == q->size-1))
-		return 1;
-	if((q->start!= q->size-1) && (q->start + 1 == q->end))
-		return 1;
-	return 0;
-}
-
-void deleteQueue(queue *q)
-{
-	free(q->array);
-	return;
-}
-
 int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal, BFSVisitedData *visited, queue *forwardQueue, queue *backwardQueue)
+//Bidirectional Breadth-First Search.
 {
 	node *fListNode, *bListNode;
 	int curForwardID, curBackwardID;
-	int fPathLength = 0, bPathLength = 0,i;
+	int fPathLength = 0, bPathLength = 0;
 
 	if(outIndex->arraySize > visited->arraySize)
 	{
@@ -161,23 +69,15 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 
 			while((fListNode->neighborCounter == N) && (fListNode->nextListNode != -1))
 			{
-				if((i=checkNeighbors(visited, forwardQueue, 'f', fListNode)) != -1)
-				{
-					while((curBackwardID=pop(backwardQueue))!=i && curBackwardID!=-2)
-					{
-						if(curBackwardID==DEPTH) fPathLength++;
-					}
+				
+				if(checkNeighbors(visited, forwardQueue, 'f', fListNode) == YES)
 					return fPathLength + bPathLength + 1;
-				}
+				
 				fListNode = getListNode(outBuffer,fListNode->nextListNode);
 			}
 
-			if((i=checkNeighbors(visited, forwardQueue, 'f', fListNode)) != -1)
-			{
-				while((curBackwardID=pop(backwardQueue))!=i && curBackwardID!=-2){
-					if(curBackwardID==DEPTH) fPathLength++;}
+			if(checkNeighbors(visited, forwardQueue, 'f', fListNode) == YES)
 				return fPathLength + bPathLength + 1;
-			}
 
 			curForwardID = pop(forwardQueue);
 
@@ -200,21 +100,14 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 
 			while((bListNode->neighborCounter == N) && (bListNode->nextListNode != -1))
 			{
-				if((i=checkNeighbors(visited, backwardQueue, 'b', bListNode)) !=-1)
-				{
-					while((curForwardID=pop(forwardQueue))!=i && curForwardID!=-2){
-						if(curForwardID==DEPTH) bPathLength++;}
+				if(checkNeighbors(visited, backwardQueue, 'b', bListNode) == YES)
 					return fPathLength + bPathLength + 1;
-				}
+				
 				bListNode = getListNode(inBuffer,bListNode->nextListNode);
 			}
 
-			if((i=checkNeighbors(visited, backwardQueue, 'b', bListNode)) !=-1)
-			{
-				while((curForwardID=pop(forwardQueue))!=i && curForwardID!=-2){
-					if(curForwardID==DEPTH) bPathLength++;}
+			if(checkNeighbors(visited, backwardQueue, 'b', bListNode) == YES)
 				return fPathLength + bPathLength + 1;
-			}
 
 			curBackwardID = pop(backwardQueue);
 
@@ -232,6 +125,7 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 }
 
 OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, node *listNode)
+//Supporive function for BFS that handles all neighboring graph nodes in a single list node.
 {
 
 	int *forwardArray;
@@ -261,198 +155,11 @@ OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, nod
 
 		if(backwardArray[listNode->neighbor[i]] == visited->roundCounter)
 		{
-			return listNode->neighbor[i];
+			return YES;
 		}
 	}
 
-	return -1;
+	return NO;
 
 }
 
-
-/*
-pathNode *bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal)
-{
-	
-	node *fListNode, *bListNode;
-	queue forwardQueue, backwardQueue;
-	int *forwardParentArray, *backwardParentArray;
-	int curForwardID, curBackwardID;
-	int i;
-
-	 forwardQueue.start = NULL;
-	forwardQueue.end = NULL;
-	backwardQueue.start = NULL;
-	backwardQueue.end = NULL; 
-	
-	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
-	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
-
-	//Create arrays to keep the parents of visited nodes
-	forwardParentArray = malloc(sizeof(int)*outIndex->arraySize);
-	backwardParentArray = malloc(sizeof(int)*inIndex->arraySize);
-	if((forwardParentArray == NULL) || (backwardParentArray == NULL))
-	{
-		printError(BFS_ARRAY_ALLOCATION_FAIL);
-		return NULL;
-	}
-
-	//Initialize the arrays
-	for(i = 0; i < outIndex->arraySize; i++)
-	{
-		forwardParentArray[i] = UNVISITED;
-		backwardParentArray[i] = UNVISITED;
-	}
-
-	forwardParentArray[start] = END_NODE;
-	backwardParentArray[goal] = END_NODE;
-
-	push(&forwardQueue, start);
-	push(&backwardQueue, goal);
-	
-	while(1)
-	{
-
-		curForwardID = pop(&forwardQueue);
-		curBackwardID = pop(&backwardQueue);
-		
-		fListNode = getListNode(outBuffer, getListHead(outIndex, curForwardID));
-		bListNode = getListNode(inBuffer, getListHead(inIndex, curBackwardID));
-
-		//Forward BFS (start to goal)
-		while((fListNode->neighborCounter == N) && (fListNode->nextListNode != -1))
-		{
-			for(i = 0; i < fListNode->neighborCounter; i++)
-			{
-				if(forwardParentArray[fListNode->neighbor[i]] != UNVISITED)
-				{
-					continue;
-				}
-
-				push(&forwardQueue, fListNode->neighbor[i]);
-				forwardParentArray[fListNode->neighbor[i]] = curForwardID;
-
-				if(backwardParentArray[fListNode->neighbor[i]] != UNVISITED)
-				{
-					pathNode* path = pathfinder(forwardParentArray, backwardParentArray, fListNode->neighbor[i]);
-					
-					//Release allocared memory before returning
-					free(forwardParentArray);
-					free(backwardParentArray);
-					while(forwardQueue.start != NULL)
-						pop(&forwardQueue);
-					while(backwardQueue.start != NULL)
-						pop(&backwardQueue);
-					
-					return path;
-				}
-			}
-
-			fListNode = getListNode(outBuffer,fListNode->nextListNode);
-
-		}
-
-		for(i = 0; i < fListNode->neighborCounter; i++)
-		{
-			if(forwardParentArray[fListNode->neighbor[i]] != UNVISITED)
-			{
-				continue;
-			}
-
-			push(&forwardQueue, fListNode->neighbor[i]);
-			forwardParentArray[fListNode->neighbor[i]] = curForwardID;
-
-			if(backwardParentArray[fListNode->neighbor[i]] != UNVISITED)
-			{
-				pathNode* path = pathfinder(forwardParentArray, backwardParentArray, fListNode->neighbor[i]);
-				
-				//Release allocared memory before returning
-				free(forwardParentArray);
-				free(backwardParentArray);
-				while(forwardQueue.start != NULL)
-					pop(&forwardQueue);
-				while(backwardQueue.start != NULL)
-					pop(&backwardQueue);
-				
-				return path;
-			}
-		}
-
-		//Backward BFS (goal to start)
-		while((bListNode->neighborCounter == N) && (bListNode->nextListNode != -1))
-		{
-			for(i = 0; i < bListNode->neighborCounter; i++)
-			{
-				if(backwardParentArray[bListNode->neighbor[i]] != UNVISITED)
-				{
-					continue;
-				}
-
-				push(&backwardQueue, bListNode->neighbor[i]);
-				backwardParentArray[bListNode->neighbor[i]] = curBackwardID;
-
-				if(forwardParentArray[bListNode->neighbor[i]] != UNVISITED)
-				{
-					pathNode* path = pathfinder(forwardParentArray, backwardParentArray, bListNode->neighbor[i]);
-					
-					//Release allocared memory before returning
-					free(forwardParentArray);
-					free(backwardParentArray);
-					while(&forwardQueue.start != NULL)
-						pop(&forwardQueue);
-					while(backwardQueue.start != NULL)
-						pop(&backwardQueue);
-					
-					return path;
-				}
-			}
-
-			bListNode = getListNode(inBuffer, bListNode->nextListNode);
-
-		}
-
-		for(i = 0; i < bListNode->neighborCounter; i++)
-		{
-			if(backwardParentArray[bListNode->neighbor[i]] != UNVISITED)
-			{
-				continue;
-			}
-
-			push(&backwardQueue, bListNode->neighbor[i]);
-			backwardParentArray[bListNode->neighbor[i]] = curBackwardID;
-
-			if(forwardParentArray[bListNode->neighbor[i]] != UNVISITED)
-			{
-				pathNode* path = pathfinder(forwardParentArray, backwardParentArray, bListNode->neighbor[i]);
-				
-				//Release allocared memory before returning
-				free(forwardParentArray);
-				free(backwardParentArray);
-				while(forwardQueue.start != NULL)
-					pop(&forwardQueue);
-				while(backwardQueue.start != NULL)
-					pop(&backwardQueue);
-				
-				return path;			
-			}
-		}
-
-		if(forwardQueue.start == NULL || backwardQueue.start == NULL)
-		{
-			//Release allocared memory before returning
-			free(forwardParentArray);
-			free(backwardParentArray);
-			while(forwardQueue.start != NULL)
-				pop(&forwardQueue);
-			while(backwardQueue.start != NULL)
-				pop(&backwardQueue);
-			
-			return NULL;
-		}
-
-	}
-
-}
-
-
-*/

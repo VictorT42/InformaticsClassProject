@@ -7,19 +7,19 @@
 #include "index.h"
 #include "buffer.h"
 
-//#define UNVISITED -1
-//#define END_NODE -2
-
 #define INITIAL_QUEUE_SIZE 1000000
 #define DEPTH -1
+
 
 OK_SUCCESS initializeQueue(queue *q, int size);
 void push(queue *q, int nodeID);
 int pop(queue *q);
+void cleanQueue(queue *q);
+int isEmptyQueue(queue *q);
+void deleteQueue(queue *q);
+void printQueue(queue *q);
 
 int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal, BFSVisitedData*, queue*, queue*);
-//pathNode *pathfinder(int *forwardParentArray, int *backwardParentArray, int midpoint);
-//int pathLength(pathNode *start);
 void deleteBFS(int *forwardParentArray, int *backwardParentArray, queue *forwardQueue, queue *backwardQueue);
 
 OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size);

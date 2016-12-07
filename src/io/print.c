@@ -97,6 +97,12 @@ void printError(int errorCode)
 		case HASH_TABLE_REALLOCATION_FAIL:
 			fprintf(stderr, "Fatal error in reallocating hash table memory. Aborting.\n");
 			exit(1);
+		case BFS_VISITED_DATA_FAIL:
+			fprintf(stderr, "Fatal error in allocating data structure memory for BFS. Aborting.\n");
+			exit(1);
+		case QUEUE_OUT_OF_BOUNDS_FAIL:
+			fprintf(stderr, "Fatal error caused failure of queue. Aborting.\n");
+			exit(1);
 	}
 
 	return;

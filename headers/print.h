@@ -18,6 +18,8 @@
 #define EDGE_ADDITION_FAIL 10
 #define HASH_TABLE_ALLOCATION_FAIL 11
 #define HASH_TABLE_REALLOCATION_FAIL 12
+#define BFS_VISITED_DATA_FAIL 13
+#define QUEUE_OUT_OF_BOUNDS_FAIL 14
 
 void printGraph(NodeIndex *index, Buffer *buffer);
 void printPath(pathNode *start);

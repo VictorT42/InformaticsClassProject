@@ -1,4 +1,4 @@
-OBJ =	obj/index.o obj/buffer.o obj/read.o obj/main.o obj/bfs.o obj/print.o obj/hash.o
+OBJ =	obj/index.o obj/buffer.o obj/read.o obj/main.o obj/bfs.o obj/print.o obj/hash.o obj/queue.o
 HDR =	headers/structs.h headers/index.h headers/buffer.h headers/read.h headers/bfs.h headers/print.h headers/hash.h
 CC  =	gcc -g3 -Wall
 OUT =	graph
@@ -26,6 +26,9 @@ obj/print.o:	$(HDR) src/io/print.c
 	
 obj/hash.o:		$(HDR) src/structs/hash.c
 	$(CC) -c src/structs/hash.c -o obj/hash.o
+	
+obj/queue.o:	$(HDR) src/structs/queue.c
+	$(CC) -c src/structs/queue.c -o obj/queue.o
 	
 clean:
 	rm -f $(OBJ) $(OUT)

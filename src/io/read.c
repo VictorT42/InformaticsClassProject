@@ -62,6 +62,8 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			if(operation == 'Q')
 			{
 				//Check the CC
+				if(outNode == 1210484 && inNode==1264439)
+					puts("here");
 				if(components->updateIndex[components->ccIndex[outNode]] != components->updateIndex[components->ccIndex[inNode]])
 					pathLength = -1;
 				else

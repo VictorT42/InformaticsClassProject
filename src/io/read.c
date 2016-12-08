@@ -61,12 +61,11 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
-				//Check the WCC
-				
-				cleanQueue(&forwardQueue);
-				cleanQueue(&backwardQueue);
-
-				pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
+				//Check the CC
+				if(components->updateIndex[components->ccIndex[outNode]] != components->updateIndex[components->ccIndex[inNode]])
+					pathLength = -1;
+				else
+					pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
 
 				printf("%d\n", pathLength);
 			}

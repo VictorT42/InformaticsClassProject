@@ -17,6 +17,5 @@ CC *createCC(int size);
 CC *estimateConnectedComponents(Buffer *outBuffer, NodeIndex *outIndex, Buffer *inBuffer, NodeIndex *inIndex);
 
 OK_SUCCESS insertNewEdge(CC* components, ptr outNode, ptr inNode);
-OK_SUCCESS connectComponents(UpdateIndex *updateIndex, int componentA, int componentB);
 
 #endif

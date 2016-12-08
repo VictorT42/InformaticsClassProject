@@ -48,6 +48,9 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 		deleteVisited(visited);
 		initializeVisited(visited, outIndex->arraySize);
 	}
+	
+	cleanQueue(forwardQueue);
+	cleanQueue(backwardQueue);
 
 	visited->roundCounter++;
 

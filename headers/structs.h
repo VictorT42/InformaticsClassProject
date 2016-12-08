@@ -59,23 +59,18 @@ typedef struct HashTablesArray
 	int arraySize;
 } HashTablesArray;
 
-typedef struct UpdateIndex
-{
-	int *connectA;
-	int *connectB;
-	int connectionArraySize;
-	int connectedComponents;
-	table **hashTableArray;
-} UpdateIndex;
+typedef int UpdateIndex;
 
 typedef struct CC
 {
 	ptr *ccIndex; //CCIndex
 	int ccIndexSize;
 	int componentsNumber;
-	UpdateIndex *updateIndex;
+	
 	int queries;
 	int updateQueries;
+	
+	UpdateIndex *updateIndex;
 } CC;
 
 typedef struct stack

@@ -35,30 +35,6 @@ CC *createCC(int size)
 	components->queries = 0;
 	components->updateQueries = 0;
 	
-	components->updateIndex = malloc(sizeof(UpdateIndex));
-	if(components->updateIndex == NULL)
-	{
-		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
-		return NULL;
-	}
-	
-	components->updateIndex->connectionArraySize = INITIAL_CONNECTION_ARRAY_SIZE;
-	components->updateIndex->connectA = malloc(INITIAL_CONNECTION_ARRAY_SIZE * sizeof(int*));
-	components->updateIndex->connectB = malloc(INITIAL_CONNECTION_ARRAY_SIZE * sizeof(int*));
-	if(components->updateIndex->connectA == NULL || components->updateIndex->connectA == NULL)
-	{
-		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
-		return NULL;
-	}
-	
-	for(i = 0; i < INITIAL_CONNECTION_ARRAY_SIZE; i++)
-	{
-		components->updateIndex->connectA[i] = -1;
-		components->updateIndex->connectB[i] = -1;
-	}
-	
-	components->updateIndex->connectedComponents = 0;
-
 	return components;
 }
 
@@ -155,22 +131,17 @@ CC *estimateConnectedComponents(Buffer *outBuffer, NodeIndex *outIndex, Buffer *
 		
 	}
 
-	//Make the hash tables for the update index
+	//Make the update index
 	components->componentsNumber = componentID;
-	components->updateIndex->hashTableArray = malloc(components->componentsNumber * sizeof(table*));
-	if(components->updateIndex->hashTableArray == NULL)
+	components->updateIndex = malloc(components->componentsNumber * sizeof(int));
+	if(components->updateIndex == NULL)
 	{
 		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
 		return NULL;
 	}
 	for(i = 0; i < components->componentsNumber; i++)
 	{
-		components->updateIndex->hashTableArray[i] = initializeHashTable(components->updateIndex->hashTableArray[i], HASH_TABLE_BUCKET_ENTRIES, HASH_TABLE_LOAD_FACTOR, INITIAL_HASH_TABLE_SIZE);
-		if(components->updateIndex->hashTableArray[i] == NULL)
-		{
-			printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
-			return NULL;
-		}
+		components->updateIndex[i] = i;
 	}
 	
 	return components;
@@ -232,41 +203,13 @@ OK_SUCCESS insertNewEdge(CC* components, ptr outNode, ptr inNode)
 	componentA = components->ccIndex[outNode];
 	componentB = components->ccIndex[inNode];
 	
-	if(componentA < componentB)
-	{
-		if(findEntry(componentB, components->updateIndex->hashTableArray[componentA]) == NULL)
-			return connectComponents(components->updateIndex, componentA, componentB);
-	}
-	else if(componentA > componentB)
-	{
-		if(findEntry(componentA, components->updateIndex->hashTableArray[componentB]) == NULL)
-			return connectComponents(components->updateIndex, componentB, componentA);
-	}
+	if(componentA == componentB)
+		return YES;
 	
-	return YES;
-	
-}
-
-OK_SUCCESS connectComponents(UpdateIndex *updateIndex, int componentA, int componentB)
-{
-	addEntryToTable(updateIndex->hashTableArray[componentA], NULL, componentB);
-	
-	if(updateIndex->connectedComponents == updateIndex->connectionArraySize - 1)
-	{
-		updateIndex->connectionArraySize *= 2;
-		updateIndex->connectA = realloc(updateIndex->connectA, updateIndex->connectionArraySize * sizeof(int));
-		updateIndex->connectB = realloc(updateIndex->connectB, updateIndex->connectionArraySize * sizeof(int));
-		if(updateIndex->connectA == NULL || updateIndex->connectB == NULL)
-		{
-			printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
-			return NO;
-		}
-	}
-	
-	updateIndex->connectA[updateIndex->connectedComponents] = componentA;
-	updateIndex->connectB[updateIndex->connectedComponents] = componentB;
-	
-	updateIndex->connectedComponents++;
+	if(components->updateIndex[componentA] < components->updateIndex[componentB])
+		components->updateIndex[componentB] = components->updateIndex[componentA];
+	else if(components->updateIndex[componentA] > components->updateIndex[componentB])
+		components->updateIndex[componentA] = components->updateIndex[componentB];
 	
 	return YES;
 	

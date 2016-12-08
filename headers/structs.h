@@ -50,11 +50,39 @@ typedef struct BFSVisitedData
 	int arraySize;
 	int roundCounter;
 } BFSVisitedData;
+
 typedef struct HashTable table;
+
 typedef struct HashTablesArray
 {
 	table **array;
 	int arraySize;
 } HashTablesArray;
+
+typedef struct UpdateIndex
+{
+	int *connectA;
+	int *connectB;
+	int connectionArraySize;
+	int connectedComponents;
+	table **hashTableArray;
+} UpdateIndex;
+
+typedef struct CC
+{
+	ptr *ccIndex; //CCIndex
+	int ccIndexSize;
+	int componentsNumber;
+	UpdateIndex *updateIndex;
+	int queries;
+	int updateQueries;
+} CC;
+
+typedef struct stack
+{
+	int *array;
+	int size;
+	int end;
+} stack;
 
 #endif

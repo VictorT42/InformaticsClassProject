@@ -79,6 +79,18 @@ void printError(int errorCode)
 		case QUEUE_OUT_OF_BOUNDS_FAIL:
 			fprintf(stderr, "Fatal error caused failure of queue. Aborting.\n");
 			exit(1);
+		case STACK_ALLOCATION_FAIL:
+			fprintf(stderr, "Fatal error in allocating stack memory. Aborting.\n");
+			exit(1);
+		case STACK_REALLOCATION_FAIL:
+			fprintf(stderr, "Fatal error in reallocating stack memory. Aborting.\n");
+			exit(1);
+		case STACK_POP_FAIL:
+			fprintf(stderr, "Fatal error in popping from empty stack. Aborting.\n");
+			exit(1);
+		case COMPONENTS_STRUCTURE_ALLOCATION_FAIL:
+			fprintf(stderr, "Fatal error in allocating connected components data structure memory. Aborting.\n");
+			exit(1);
 	}
 
 	return;

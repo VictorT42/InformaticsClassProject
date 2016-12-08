@@ -3,63 +3,8 @@
 #include "../../headers/structs.h"
 #include "../../headers/index.h"
 #include "../../headers/buffer.h"
+#include "../../headers/wcc.h"
 #include "../../headers/hash.h"
-
-#define INITIAL_STACK_SIZE 1000000
-#define UNDISCOVERED -1
-
-typedef struct CC
-{
-uint32_t *ccIndex; //CCIndex
-//UpdateIndex* updateIndex;
-int queries;
-int updateQueries;
-} CC;
-
-typedef struct stack
-{
-	int *array;
-	int size;
-	int end;
-} stack;
-
-typedef struct UpdateIndex
-{
-	table *array;
-	int arraySize;
-} UpdateIndex;
-
-void initializeStack(stack *s)
-{
-	s->size = INITIAL_STACK_SIZE;
-	s->end = 0;
-	s->array = malloc(s->size*sizeof(int));
-	//TODO ERRORCHECKING
-}
-
-void stackPush(stack *s, int nodeID)
-{
-	if(s->end == s->size-1)
-	{
-		s->size*=2;
-		s->array = realloc(s->array, s->size*sizeof(int));
-	}
-
-	s->array[s->end] = nodeID;
-	s->end++;
-}
-
-int stackPop(stack *s)
-{
-	if(s->end == 0)
-	{
-//		printError(STACK_POP_FAIL);
-		return -1;
-	}
-
-	s->end--;
-	return s->array[s->end];
-}
 
 CC *createCC(int size)
 {
@@ -67,17 +12,52 @@ CC *createCC(int size)
 	CC *components;
 
 	components = malloc(sizeof(CC));
-	//TODO
+	
+	if(components == NULL)
+	{
+		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+		return NULL;
+	}
 
-	components->ccIndex = malloc(size*sizeof(uint32_t));
-	//components->malloc(sizeof(UpdateIndex))
-	components->queries = 0;
-	components->updateQueries = 0;
+	components->ccIndexSize = size;
+	components->ccIndex = malloc(size * sizeof(ptr));
+	if(components->ccIndex == NULL)
+	{
+		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+		return NULL;
+	}
 
 	for(i = 0; i < size; i++)
 	{
 		components->ccIndex[i] = UNDISCOVERED;
 	}
+	
+	components->queries = 0;
+	components->updateQueries = 0;
+	
+	components->updateIndex = malloc(sizeof(UpdateIndex));
+	if(components->updateIndex == NULL)
+	{
+		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+		return NULL;
+	}
+	
+	components->updateIndex->connectionArraySize = INITIAL_CONNECTION_ARRAY_SIZE;
+	components->updateIndex->connectA = malloc(INITIAL_CONNECTION_ARRAY_SIZE * sizeof(int*));
+	components->updateIndex->connectB = malloc(INITIAL_CONNECTION_ARRAY_SIZE * sizeof(int*));
+	if(components->updateIndex->connectA == NULL || components->updateIndex->connectA == NULL)
+	{
+		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+		return NULL;
+	}
+	
+	for(i = 0; i < INITIAL_CONNECTION_ARRAY_SIZE; i++)
+	{
+		components->updateIndex->connectA[i] = -1;
+		components->updateIndex->connectB[i] = -1;
+	}
+	
+	components->updateIndex->connectedComponents = 0;
 
 	return components;
 }
@@ -172,13 +152,122 @@ CC *estimateConnectedComponents(Buffer *outBuffer, NodeIndex *outIndex, Buffer *
 			componentID++;
 
 		}
+		
 	}
 
+	//Make the hash tables for the update index
+	components->componentsNumber = componentID;
+	components->updateIndex->hashTableArray = malloc(components->componentsNumber * sizeof(table*));
+	if(components->updateIndex->hashTableArray == NULL)
+	{
+		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+		return NULL;
+	}
+	for(i = 0; i < components->componentsNumber; i++)
+	{
+		components->updateIndex->hashTableArray[i] = initializeHashTable(components->updateIndex->hashTableArray[i], HASH_TABLE_BUCKET_ENTRIES, HASH_TABLE_LOAD_FACTOR, INITIAL_HASH_TABLE_SIZE);
+		if(components->updateIndex->hashTableArray[i] == NULL)
+		{
+			printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+			return NULL;
+		}
+	}
+	
 	return components;
 
 }
 
+OK_SUCCESS insertNewEdge(CC* components, ptr outNode, ptr inNode)
+{
+	int previousArraySize, expansionFlag;
+	int componentA, componentB;
+	int i;
+	
+	previousArraySize = components->ccIndexSize;
+	while(outNode >= components->ccIndexSize || inNode >= components->ccIndexSize)
+	{
+		expansionFlag = 1;
+		components->ccIndexSize = components->ccIndexSize*2;
+	}
+	
+	if(expansionFlag == 1)
+	{
+		components->ccIndex = realloc(components->ccIndex, components->ccIndexSize * sizeof(int));
+		if(components->ccIndex == NULL)
+		{
+			printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+			return NO;
+		}
+		
+		for(i = previousArraySize; i < components->ccIndexSize; i++)
+		{
+			components->ccIndex[i] = UNDISCOVERED;
+		}
+		
+		if(components->ccIndex[outNode] == UNDISCOVERED)
+		{
+			components->ccIndex[outNode] = components->componentsNumber;
+			components->componentsNumber++;
+			
+			if(components->ccIndex[inNode] == UNDISCOVERED)
+			{
+				components->ccIndex[inNode] = components->ccIndex[outNode];
+				return YES;
+			}
+		}
+		if(components->ccIndex[inNode] == UNDISCOVERED)
+		{
+			components->ccIndex[inNode] = components->componentsNumber;
+			components->componentsNumber++;
+			
+			if(components->ccIndex[outNode] == UNDISCOVERED)
+			{
+				components->ccIndex[outNode] = components->ccIndex[inNode];
+				return YES;
+			}
+		}
+		
+	}
+	
+	componentA = components->ccIndex[outNode];
+	componentB = components->ccIndex[inNode];
+	
+	if(componentA < componentB)
+	{
+		if(findEntry(componentB, components->updateIndex->hashTableArray[componentA]) == NULL)
+			return connectComponents(components->updateIndex, componentA, componentB);
+	}
+	else if(componentA > componentB)
+	{
+		if(findEntry(componentA, components->updateIndex->hashTableArray[componentB]) == NULL)
+			return connectComponents(components->updateIndex, componentB, componentA);
+	}
+	
+	return YES;
+	
+}
 
-
-
-
+OK_SUCCESS connectComponents(UpdateIndex *updateIndex, int componentA, int componentB)
+{
+	addEntryToTable(updateIndex->hashTableArray[componentA], NULL, componentB);
+	
+	if(updateIndex->connectedComponents == updateIndex->connectionArraySize - 1)
+	{
+		updateIndex->connectionArraySize *= 2;
+		updateIndex->connectA = realloc(updateIndex->connectA, updateIndex->connectionArraySize * sizeof(int));
+		updateIndex->connectB = realloc(updateIndex->connectB, updateIndex->connectionArraySize * sizeof(int));
+		if(updateIndex->connectA == NULL || updateIndex->connectB == NULL)
+		{
+			printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
+			return NO;
+		}
+	}
+	
+	updateIndex->connectA[updateIndex->connectedComponents] = componentA;
+	updateIndex->connectB[updateIndex->connectedComponents] = componentB;
+	
+	updateIndex->connectedComponents++;
+	
+	return YES;
+	
+}

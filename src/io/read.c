@@ -8,6 +8,7 @@
 #include "../../headers/print.h"
 #include "../../headers/read.h"
 #include "../../headers/hash.h"
+#include "../../headers/wcc.h"
 
 void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *inIndex, HashTablesArray *hashStruct)
 {
@@ -17,6 +18,7 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	int pathLength;
 	queue forwardQueue, backwardQueue;
 	BFSVisitedData visited;
+	CC *components;
 
 	while(1)
 	{	
@@ -33,8 +35,14 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 
 		add(outBuffer, inBuffer, outIndex, inIndex, hashStruct, outNode, inNode);
 
-	}fprintf(stderr,"Done with graph\n");
-
+	}
+	
+	//TEMP
+	fprintf(stderr,"Done with graph\n");
+	//////
+	
+	components = estimateConnectedComponents(outBuffer, outIndex, inBuffer, inIndex);
+	
 	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
 	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
 	initializeVisited(&visited, outIndex->arraySize);
@@ -53,6 +61,8 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
+				//Check the WCC
+				
 				cleanQueue(&forwardQueue);
 				cleanQueue(&backwardQueue);
 
@@ -63,6 +73,7 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 			else if(operation == 'A')
 			{
 				add(outBuffer, inBuffer, outIndex, inIndex, hashStruct, outNode, inNode);
+				insertNewEdge(components, outNode, inNode);
 			}
 			else
 			{

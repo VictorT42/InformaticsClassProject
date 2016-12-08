@@ -23,15 +23,12 @@ OK_SUCCESS initializeQueue(queue *q, int size)
 
 void push(queue *q, int nodeID)
 //Pushes into queue.
-{
-	int newSize;
-	
+{	
 	q->array[q->end] = nodeID;
 	
 	if((q->end == q->start-1) || (q->end==q->size && q->start==0))  //If the queue is full and needs more space
 	{
-
-		newSize = q->size*2;
+		int newSize = q->size*2;
 
 		q->array = realloc(q->array, newSize*sizeof(int));
 
@@ -48,9 +45,9 @@ void push(queue *q, int nodeID)
 	{
 		q->end=0;
 	}
-	else if(q->end > (q->size))
+/*	else if(q->end > (q->size))
 		printError(QUEUE_OUT_OF_BOUNDS_FAIL);
-	
+*/	
 }
 
 int pop(queue *q)
@@ -73,9 +70,9 @@ int pop(queue *q)
 		{
 			q->start=0;
 		}
-		else if(q->start>q->size)
+/*		else if(q->start>q->size)
 			printError(QUEUE_OUT_OF_BOUNDS_FAIL);
-		
+*/		
 	}
 	
 	return nodeID;	

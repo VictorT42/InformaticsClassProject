@@ -207,10 +207,36 @@ OK_SUCCESS insertNewEdge(CC* components, ptr outNode, ptr inNode)
 		return YES;
 	
 	if(components->updateIndex[componentA] < components->updateIndex[componentB])
+	{
+		components->updateIndex[components->updateIndex[componentB]] = components->updateIndex[componentA];
 		components->updateIndex[componentB] = components->updateIndex[componentA];
+	}
 	else if(components->updateIndex[componentA] > components->updateIndex[componentB])
+	{
+		components->updateIndex[components->updateIndex[componentA]] = components->updateIndex[componentB];
 		components->updateIndex[componentA] = components->updateIndex[componentB];
+	}
 	
 	return YES;
 	
 }
+
+OK_SUCCESS destroyConnectedComponents(CC *components)
+{
+	free(components->ccIndex);
+	free(components->updateIndex);
+	free(components);
+	return YES;
+}
+
+OK_SUCCESS rebuildIndexes(CC* components)
+{
+	
+	fprintf(stderr,"Should have expanded :P XD\n");
+	return NO;
+}
+
+
+
+
+

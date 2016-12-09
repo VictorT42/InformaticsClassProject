@@ -19,6 +19,9 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	queue forwardQueue, backwardQueue;
 	BFSVisitedData visited;
 	CC *components;
+	int outMinCC, inMinCC;
+	int usedUpdateIndex;
+	float metric;
 
 	while(1)
 	{	
@@ -55,16 +58,43 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 		operation = line[0];
 
 		if(operation == 'F')
-			continue;
+		{
+			metric = ((float)components->updateQueries)/components->queries;
+			if(metric > CC_METRIC)
+			{
+//				rebuildIndexes(components);
+			}
+		}
 		else
 		{
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
 				//Check the CC
-				if(outNode == 1210484 && inNode==1264439)
-					puts("here");
-				if(components->updateIndex[components->ccIndex[outNode]] != components->updateIndex[components->ccIndex[inNode]])
+				
+				usedUpdateIndex = 0;
+				outMinCC = components->updateIndex[components->ccIndex[outNode]];
+				inMinCC = components->updateIndex[components->ccIndex[inNode]];
+				
+				if(outMinCC == inMinCC && components->ccIndex[outNode] != components->ccIndex[inNode])
+					usedUpdateIndex = 1;
+				
+				while(outMinCC != components->updateIndex[outMinCC])
+				{
+					outMinCC = components->updateIndex[outMinCC];
+					usedUpdateIndex = 1;
+				}
+				while(inMinCC != components->updateIndex[inMinCC])
+				{
+					inMinCC = components->updateIndex[inMinCC];
+					usedUpdateIndex = 1;
+				}
+				
+				if(usedUpdateIndex)
+					components->updateQueries++;
+				components->queries++;
+
+				if(outMinCC != inMinCC)
 					pathLength = -1;
 				else
 					pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
@@ -84,6 +114,7 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	}
 
 	deleteVisited(&visited);
+	destroyConnectedComponents(components);
 	deleteQueue(&forwardQueue);
 	deleteQueue(&backwardQueue);
 	

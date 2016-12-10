@@ -7,6 +7,8 @@
 #include "../../headers/buffer.h"
 #include "../../headers/bfs.h"
 #include "../../headers/print.h"
+#include "../../headers/scc.h"
+
 
 OK_SUCCESS initializeVisited(BFSVisitedData *visited, int size)
 //Initialize the BFS support sructure holding visited node information.
@@ -36,12 +38,16 @@ void deleteVisited(BFSVisitedData *visited)
 	free(visited->bVisited);
 }
 
-int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal, BFSVisitedData *visited, queue *forwardQueue, queue *backwardQueue)
+int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inBuffer, int start, int goal, BFSVisitedData *visited, queue *forwardQueue, queue *backwardQueue, SCC *components)
 //Bidirectional Breadth-First Search.
 {
 	node *fListNode, *bListNode;
 	int curForwardID, curBackwardID;
 	int fPathLength = 0, bPathLength = 0;
+	int componentID = -1;
+	
+	if(components != NULL)
+		componentID = components->id_belongs_to_component[start];
 
 	if(outIndex->arraySize > visited->arraySize)
 	{
@@ -73,13 +79,13 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 			while((fListNode->neighborCounter == N) && (fListNode->nextListNode != -1))
 			{
 				
-				if(checkNeighbors(visited, forwardQueue, 'f', fListNode) == YES)
+				if(checkNeighbors(visited, forwardQueue, 'f', fListNode, components, componentID) == YES)
 					return fPathLength + bPathLength + 1;
 				
 				fListNode = getListNode(outBuffer,fListNode->nextListNode);
 			}
 
-			if(checkNeighbors(visited, forwardQueue, 'f', fListNode) == YES)
+			if(checkNeighbors(visited, forwardQueue, 'f', fListNode, components, componentID) == YES)
 				return fPathLength + bPathLength + 1;
 
 			curForwardID = pop(forwardQueue);
@@ -103,13 +109,13 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 
 			while((bListNode->neighborCounter == N) && (bListNode->nextListNode != -1))
 			{
-				if(checkNeighbors(visited, backwardQueue, 'b', bListNode) == YES)
+				if(checkNeighbors(visited, backwardQueue, 'b', bListNode, components, componentID) == YES)
 					return fPathLength + bPathLength + 1;
 				
 				bListNode = getListNode(inBuffer,bListNode->nextListNode);
 			}
 
-			if(checkNeighbors(visited, backwardQueue, 'b', bListNode) == YES)
+			if(checkNeighbors(visited, backwardQueue, 'b', bListNode, components, componentID) == YES)
 				return fPathLength + bPathLength + 1;
 
 			curBackwardID = pop(backwardQueue);
@@ -127,8 +133,8 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 	
 }
 
-OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, node *listNode)
-//Supporive function for BFS that handles all neighboring graph nodes in a single list node.
+OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, node *listNode, SCC *components, int componentID)
+//Supportive function for BFS that handles all neighbouring graph nodes in a single list node.
 {
 
 	int *forwardArray;
@@ -146,23 +152,42 @@ OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, nod
 		forwardArray = visited->bVisited;
 	}
 
-	for(i = 0; i < listNode->neighborCounter; i++)
+	if(components==NULL)
 	{
-		if(forwardArray[listNode->neighbor[i]] == visited->roundCounter)
+		for(i = 0; i < listNode->neighborCounter; i++)
 		{
-			continue;
-		}
+			if(forwardArray[listNode->neighbor[i]] == visited->roundCounter)
+			{
+				continue;
+			}
 
-		push(q, listNode->neighbor[i]);
-		forwardArray[listNode->neighbor[i]] = visited->roundCounter;
+			push(q, listNode->neighbor[i]);
+			forwardArray[listNode->neighbor[i]] = visited->roundCounter;
 
-		if(backwardArray[listNode->neighbor[i]] == visited->roundCounter)
-		{
-			return YES;
+			if(backwardArray[listNode->neighbor[i]] == visited->roundCounter)
+			{
+				return YES;
+			}
 		}
 	}
+	else
+	{
+		for(i = 0; i < listNode->neighborCounter; i++)
+		{
+			if(forwardArray[listNode->neighbor[i]] == visited->roundCounter || components->id_belongs_to_component[listNode->neighbor[i]] == componentID)
+			{
+				continue;
+			}
 
+			push(q, listNode->neighbor[i]);
+			forwardArray[listNode->neighbor[i]] = visited->roundCounter;
+
+			if(backwardArray[listNode->neighbor[i]] == visited->roundCounter)
+			{
+				return YES;
+			}
+		}
+	}
 	return NO;
 
 }
-

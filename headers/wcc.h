@@ -13,6 +13,7 @@
 void initializeStack(stack *s);
 void stackPush(stack *s, int nodeID);
 int stackPop(stack *s);
+void deleteStack(stack *s);
 
 CC *createCC(int size);
 CC *estimateConnectedComponents(Buffer *outBuffer, NodeIndex *outIndex, Buffer *inBuffer, NodeIndex *inIndex);

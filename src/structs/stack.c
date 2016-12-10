@@ -45,3 +45,8 @@ int stackPop(stack *s)
 	s->end--;
 	return s->array[s->end];
 }
+
+void deleteStack(stack *s)
+{
+	free(s->array);
+}

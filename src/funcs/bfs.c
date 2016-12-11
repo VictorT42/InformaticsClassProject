@@ -97,7 +97,7 @@ int bBFS(NodeIndex *outIndex, Buffer *outBuffer, NodeIndex *inIndex, Buffer *inB
 		
 		if(isEmptyQueue(forwardQueue))
 		{
-		return -1;
+			return -1;
 		}
 		
 		
@@ -174,7 +174,7 @@ OK_SUCCESS checkNeighbors(BFSVisitedData *visited, queue *q, char direction, nod
 	{
 		for(i = 0; i < listNode->neighborCounter; i++)
 		{
-			if(forwardArray[listNode->neighbor[i]] == visited->roundCounter || components->id_belongs_to_component[listNode->neighbor[i]] == componentID)
+			if(forwardArray[listNode->neighbor[i]] == visited->roundCounter || components->id_belongs_to_component[listNode->neighbor[i]] != componentID)
 			{
 				continue;
 			}

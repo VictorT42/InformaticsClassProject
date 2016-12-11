@@ -13,6 +13,7 @@
 void initializeStack(stack *s);
 void stackPush(stack *s, int nodeID);
 int stackPop(stack *s);
+int stackVirtualPop(stack *s);
 int stackIsEmpty(stack *s);
 void deleteStack(stack *s);
 
@@ -20,7 +21,7 @@ CC *createCC(int size);
 CC *estimateConnectedComponents(Buffer *outBuffer, NodeIndex *outIndex, Buffer *inBuffer, NodeIndex *inIndex);
 
 OK_SUCCESS insertNewEdge(CC* components, ptr outNode, ptr inNode);
-OK_SUCCESS rebuildIndexes(CC* components);
+OK_SUCCESS rebuildIndexes(CC* components, Buffer *outBuffer, NodeIndex *outIndex, Buffer *inBuffer, NodeIndex *inIndex);
 
 OK_SUCCESS destroyConnectedComponents(CC *components);
 

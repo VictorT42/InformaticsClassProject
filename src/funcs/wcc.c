@@ -229,11 +229,11 @@ OK_SUCCESS destroyConnectedComponents(CC *components)
 	return YES;
 }
 
-OK_SUCCESS rebuildIndexes(CC* components)
+OK_SUCCESS rebuildIndexes(CC* components, Buffer *outBuffer, NodeIndex *outIndex, Buffer *inBuffer, NodeIndex *inIndex)
 {
-	
-	fprintf(stderr,"Should have expanded :P XD\n");
-	return NO;
+	destroyConnectedComponents(components);
+	components = estimateConnectedComponents(outBuffer, outIndex, inBuffer, inIndex);
+	return YES;
 }
 
 

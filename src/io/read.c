@@ -11,7 +11,7 @@
 #include "../../headers/wcc.h"
 #include "../../headers/scc.h"
 
-#define TYPE 's'
+#define TYPE 'd'
 void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *inIndex, HashTablesArray *hashStruct)
 {
 	int inNode, outNode;
@@ -48,17 +48,17 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 
 	}
 	
-	//TEMP
-	fprintf(stderr,"Done with graph\n");
-	
-	createHypergraphEdges(&hypergraphEdges);
-	SCComponents = estimateStronglyConnectedComponents(outBuffer, outIndex, &hypergraphEdges);
-	hypergraph = buildHypergraph(&hypergraphEdges);
-	grail = buildGrailIndex(hypergraph, SCComponents);
-	
-	//////
-	
-	components = estimateConnectedComponents(outBuffer, outIndex, inBuffer, inIndex);
+	if(graphType == 's')
+	{
+		createHypergraphEdges(&hypergraphEdges);
+		SCComponents = estimateStronglyConnectedComponents(outBuffer, outIndex, &hypergraphEdges);
+		hypergraph = buildHypergraph(&hypergraphEdges);
+		grail = buildGrailIndex(hypergraph, SCComponents);
+	}
+	else
+	{
+		components = estimateConnectedComponents(outBuffer, outIndex, inBuffer, inIndex);
+	}
 	
 	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
 	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
@@ -78,7 +78,7 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 				metric = ((float)components->updateQueries)/components->queries;
 				if(metric > CC_METRIC)
 				{
-//					rebuildIndexes(components);
+					rebuildIndexes(components, outBuffer, outIndex, inBuffer, inIndex);
 				}
 			}
 		}

@@ -54,7 +54,7 @@ int stackVirtualPop(stack *s)
 		return -1;
 	}
 	
-	return s->array[s->end];	
+	return s->array[s->end-1];
 }
 
 int stackIsEmpty(stack *s)

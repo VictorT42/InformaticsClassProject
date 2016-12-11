@@ -7,6 +7,9 @@
 #include "../../headers/wcc.h"
 #include "../../headers/bfs.h"
 
+
+
+//TEMP
 #include <stdio.h>
 void printStack(stack *s)
 {
@@ -17,6 +20,8 @@ void printStack(stack *s)
 	return;
 }
 int stackVirtualPop(stack*);
+//////
+
 
 void createHypergraphEdges(HypergraphEdges *hypergraphEdges)
 {
@@ -156,7 +161,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 OK_SUCCESS createSCC(SCC *components, int size)
 {
 	components->components = malloc(INITIAL_SCC_SIZE * sizeof(Component*));
-	components->components_count = 0;
+	components->components_count = -1;
 	components->arraySize = INITIAL_SCC_SIZE;
 	components->id_belongs_to_component = malloc(size * sizeof(int));
 	//error check

@@ -12,7 +12,10 @@
 
 int stackIsEmpty(stack *s)
 {
-	return s->end;
+	if(s->end==0)
+		return YES;
+	else
+		return NO;
 }
 
 

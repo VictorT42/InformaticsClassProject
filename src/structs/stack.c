@@ -46,6 +46,25 @@ int stackPop(stack *s)
 	return s->array[s->end];
 }
 
+int stackVirtualPop(stack *s)
+{
+	if(s->end == 0)
+	{
+		printError(STACK_POP_FAIL);
+		return -1;
+	}
+	
+	return s->array[s->end];	
+}
+
+int stackIsEmpty(stack *s)
+{
+	if(s->end==0)
+		return YES;
+	else
+		return NO;
+}
+
 void deleteStack(stack *s)
 {
 	free(s->array);

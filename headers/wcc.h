@@ -13,6 +13,7 @@
 void initializeStack(stack *s);
 void stackPush(stack *s, int nodeID);
 int stackPop(stack *s);
+int stackIsEmpty(stack *s);
 void deleteStack(stack *s);
 
 CC *createCC(int size);

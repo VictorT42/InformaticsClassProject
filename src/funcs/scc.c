@@ -7,17 +7,16 @@
 #include "../../headers/wcc.h"
 #include "../../headers/bfs.h"
 
-
-//TEMP
-
-int stackIsEmpty(stack *s)
+#include <stdio.h>
+void printStack(stack *s)
 {
-	if(s->end==0)
-		return YES;
-	else
-		return NO;
+	int i;
+	for(i=0;i<s->end;i++)
+		printf("%d->",s->array[i]);
+	printf("\b\b  \n");
+	return;
 }
-
+int stackVirtualPop(stack*);
 
 void createHypergraphEdges(HypergraphEdges *hypergraphEdges)
 {
@@ -81,7 +80,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 		
 		while(!stackIsEmpty(&callStack))
 		{
-			curNode = stackPop(&callStack);
+			curNode = stackVirtualPop(&callStack);
 			
 			listNode = getListNode(outBuffer, lastVisitedListNode[curNode]);
 			
@@ -94,7 +93,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 			
 				stackPush(&tarjanStack, curNode);
 			}
-			else
+			else  //If returning after a child node has been processed, check the child node's low link
 			{
 				neighbor = listNode->neighbor[lastVisitedNeighbor[curNode]];
 				if(lowLink[neighbor] < lowLink[curNode])
@@ -102,38 +101,39 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 			}
 			
 			lastVisitedNeighbor[curNode]++;
-			if(lastVisitedNeighbor[curNode] == listNode->neighborCounter)
+			if(lastVisitedNeighbor[curNode] == listNode->neighborCounter)  //If at the end of the current list node
 			{
-				if(listNode->nextListNode == -1)
+				if(listNode->nextListNode == -1)  //If there are no more children to be added
 				{
+					stackPop(&callStack);
 					if(index[curNode] == lowLink[curNode])
-					{
+					{fprintf(stderr,"Done with node %d\n",curNode);
 						createComponent(components, index, &tarjanStack, curNode);
-						if(!stackIsEmpty(&tarjanStack))
+						if(!stackIsEmpty(&tarjanStack))  //Unless this is a root graph node, there is an edge connecting its parent's component to its own
 						{
-							parent = stackPop(&callStack);
+							parent = stackVirtualPop(&callStack);
 							addEdgeToHypergraph(hypergraphEdges, parent, curNode);
-							stackPush(&callStack, parent);
+//							stackPush(&callStack, parent);
 						}
 					}
 					continue;
 				}
-			}
-			else
-			{
-				lastVisitedListNode[curNode] = listNode->nextListNode;
-				lastVisitedNeighbor[curNode] = 0;
+				else  //If there are more children to be added, go to the next list node
+				{
+					lastVisitedListNode[curNode] = listNode->nextListNode;
+					lastVisitedNeighbor[curNode] = 0;
+				}
 			}
 			
-			stackPush(&callStack, curNode);
+//			stackPush(&callStack, curNode);  //Unless the graph node has added its last child already, it will need to be revisited
 			
 			neighbor = listNode->neighbor[lastVisitedNeighbor[curNode]];
 			
-			if(index[neighbor] == UNDEFINED)
+			if(index[neighbor] == UNDEFINED)  //If the child has not been visited, add it to the stack
 			{
 				stackPush(&callStack, neighbor);
 			}
-			else if(index[neighbor] == CONNECTED)
+			else if(index[neighbor] == CONNECTED)  //If the child has been put in a component, there is an edge connecting this node's component to the child's
 			{
 				addEdgeToHypergraph(hypergraphEdges, curNode, neighbor);
 			}
@@ -157,7 +157,7 @@ OK_SUCCESS createSCC(SCC *components, int size)
 {
 	components->components = malloc(INITIAL_SCC_SIZE * sizeof(Component*));
 	components->components_count = 0;
-	components->arraySize = 0;
+	components->arraySize = INITIAL_SCC_SIZE;
 	components->id_belongs_to_component = malloc(size * sizeof(int));
 	//error check
 	return YES;
@@ -209,7 +209,7 @@ void createComponent(SCC *components, int *index, stack *tarjanStack, ptr root)
 		index[curNode] = CONNECTED;
 		
 	}
-	while(curNode == root);
+	while(curNode != root);
 	
 	return;
 }
@@ -334,11 +334,11 @@ GrailIndex *buildGrailIndex(Hypergraph *hypergraph, SCC* components)
 					grail->minRank[curComponent] = rank;
 					rank++;
 				}
-			}
-			else
-			{
-				lastVisitedListNode[curComponent] = listNode->nextListNode;
-				lastVisitedNeighbor[curComponent] = 0;
+				else
+				{
+					lastVisitedListNode[curComponent] = listNode->nextListNode;
+					lastVisitedNeighbor[curComponent] = 0;
+				}
 			}
 			
 			neighbor = listNode->neighbor[lastVisitedNeighbor[curComponent]];

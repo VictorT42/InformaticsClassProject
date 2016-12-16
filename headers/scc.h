@@ -16,6 +16,7 @@ typedef int GRAIL_ANSWER;
 #define INITIAL_CC_ARRAY_SIZE 16
 #define INITIAL_HYPERGRAPH_ARRAY_SIZE 32
 #define INITIAL_SCC_SIZE 32
+#define INITIAL_HYP_EDGE_ARRAY_SIZE 1024
 
 typedef struct Component
 {

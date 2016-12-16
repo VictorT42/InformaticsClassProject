@@ -10,18 +10,13 @@
 
 SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex, HypergraphEdges *hypergraphEdges)
 {
-	int i, hypEdgeCount=0, indexCounter = 0;
+	int i, indexCounter = 0;
 	stack callStack, tarjanStack;
 	int *index, *lowLink, *lastVisitedListNode, *lastVisitedNeighbor;
 	int neighbor, parent;
 	node *listNode;
 	ptr curNode;
 	SCC *components;
-	int **hypEdges, hypEdgesSize=INITIAL_HYP_EDGE_ARRAY_SIZE;
-	
-	hypEdges=malloc(2*sizeof(int*));
-	hypEdges[0]=malloc(hypEdgesSize*sizeof(int));
-	hypEdges[1]=malloc(hypEdgesSize*sizeof(int));
 	
 	index = malloc(outIndex->arraySize * sizeof(int));
 	lowLink = malloc(outIndex->arraySize * sizeof(int));
@@ -87,14 +82,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 						{
 							
 							parent = stackVirtualPop(&callStack);
-							hypEdges[0][hypEdgeCount]=parent;
-							hypEdges[1][hypEdgeCount]=curNode;
-							hypEdgeCount++;
-							if(hypEdgeCount==hypEdgesSize){
-								hypEdgesSize*=2;
-								hypEdges[0]=realloc(hypEdges[0],hypEdgesSize*sizeof(int));
-								hypEdges[1]=realloc(hypEdges[1],hypEdgesSize*sizeof(int));
-							}
+							addEdgeToHypergraph(hypergraphEdges, parent, curNode);
 						}
 					}
 					continue;
@@ -114,23 +102,12 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 			}
 			else if(index[neighbor] == CONNECTED)  //If the child has been put in a component, there is an edge connecting this node's component to the child's
 			{
-				hypEdges[0][hypEdgeCount]=curNode;
-				hypEdges[1][hypEdgeCount]=neighbor;
-				hypEdgeCount++;
-				if(hypEdgeCount==hypEdgesSize){
-					hypEdgesSize*=2;
-					hypEdges[0]=realloc(hypEdges[0],hypEdgesSize*sizeof(int));
-					hypEdges[1]=realloc(hypEdges[1],hypEdgesSize*sizeof(int));
-				}
+				addEdgeToHypergraph(hypergraphEdges, curNode, neighbor);
 			}
 			
 		}
 	}
-	
-	for(i=0;i<hypEdgeCount;i++){
-		addEdgeToHypergraph(hypergraphEdges, components->id_belongs_to_component[hypEdges[0][i]], components->id_belongs_to_component[hypEdges[1][i]]);
-	}
-	
+
 	deleteStack(&callStack);
 	deleteStack(&tarjanStack);
 	

@@ -70,7 +70,7 @@ OK_SUCCESS createSCC(SCC *components, int size);
 SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex, HypergraphEdges *);
 void addEdgeToHypergraph(HypergraphEdges *hypergraphEdges, ptr outNode, ptr inNode);
 void createHypergraphEdges(HypergraphEdges *hypergraphEdges);
-Hypergraph *buildHypergraph(HypergraphEdges *hypergraphEdges);
+Hypergraph *buildHypergraph(HypergraphEdges *hypergraphEdges, SCC* components);
 GrailIndex *buildGrailIndex(Hypergraph *hypergraph, SCC* components);
 GRAIL_ANSWER isReachableGrailIndex(GrailIndex* grail, uint32_t source_node, uint32_t target_node);
 OK_SUCCESS destroyGrailIndex(GrailIndex* index);

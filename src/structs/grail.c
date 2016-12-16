@@ -7,7 +7,7 @@
 #include "../../headers/wcc.h"
 #include "../../headers/bfs.h"
 
-Hypergraph *buildHypergraph(HypergraphEdges *hypergraphEdges)
+Hypergraph *buildHypergraph(HypergraphEdges *hypergraphEdges, SCC* components)
 {
 	int i;
 	ptr outNode, inNode;
@@ -18,8 +18,8 @@ Hypergraph *buildHypergraph(HypergraphEdges *hypergraphEdges)
 	
 	for(i = 0; i < hypergraphEdges->edgeCount; i++)
 	{
-		outNode = hypergraphEdges->outNode[i];
-		inNode = hypergraphEdges->inNode[i];
+		outNode = components->id_belongs_to_component[hypergraphEdges->outNode[i]];
+		inNode = components->id_belongs_to_component[hypergraphEdges->inNode[i]];
 		
 		if((hypergraph->index->arraySize <= outNode) || (hypergraph->index->listHead[outNode] == -1))
 			insertNode(hypergraph->index, outNode, hypergraph->buffer);

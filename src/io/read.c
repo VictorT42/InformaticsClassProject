@@ -52,7 +52,7 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	{
 		createHypergraphEdges(&hypergraphEdges);
 		SCComponents = estimateStronglyConnectedComponents(outBuffer, outIndex, &hypergraphEdges);
-		hypergraph = buildHypergraph(&hypergraphEdges);
+		hypergraph = buildHypergraph(&hypergraphEdges, SCComponents);
 		grail = buildGrailIndex(hypergraph, SCComponents);
 	}
 	else

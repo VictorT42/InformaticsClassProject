@@ -53,7 +53,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 				
 		curNode = i;
 		stackPush(&callStack, curNode);
-		while(callStack.end!=0)
+		while(!stackIsEmpty(&callStack))
 		{
 			curNode = stackVirtualPop(&callStack);
 			

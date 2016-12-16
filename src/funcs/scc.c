@@ -10,13 +10,18 @@
 
 SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex, HypergraphEdges *hypergraphEdges)
 {
-	int i, indexCounter = 0;
+	int i, hypEdgeCount=0, indexCounter = 0;
 	stack callStack, tarjanStack;
 	int *index, *lowLink, *lastVisitedListNode, *lastVisitedNeighbor;
 	int neighbor, parent;
 	node *listNode;
 	ptr curNode;
 	SCC *components;
+	int **hypEdges, hypEdgesSize=INITIAL_HYP_EDGE_ARRAY_SIZE;
+	
+	hypEdges=malloc(2*sizeof(int*));
+	hypEdges[0]=malloc(hypEdgesSize*sizeof(int));
+	hypEdges[1]=malloc(hypEdgesSize*sizeof(int));
 	
 	index = malloc(outIndex->arraySize * sizeof(int));
 	lowLink = malloc(outIndex->arraySize * sizeof(int));
@@ -48,8 +53,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 				
 		curNode = i;
 		stackPush(&callStack, curNode);
-		
-		while(!stackIsEmpty(&callStack))
+		while(callStack.end!=0)
 		{
 			curNode = stackVirtualPop(&callStack);
 			
@@ -61,10 +65,9 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 				index[curNode] = indexCounter;
 				lowLink[curNode] = indexCounter;
 				indexCounter++;
-			
 				stackPush(&tarjanStack, curNode);
 			}
-			else  //If returning after a child node has been processed, check the child node's low link
+			else if (index[neighbor] != CONNECTED)  //If returning after a child node has been processed, check the child node's low link
 			{
 				neighbor = listNode->neighbor[lastVisitedNeighbor[curNode]];
 				if(lowLink[neighbor] < lowLink[curNode])
@@ -80,10 +83,18 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 					if(index[curNode] == lowLink[curNode])
 					{
 						createComponent(components, index, &tarjanStack, curNode);
-						if(!stackIsEmpty(&tarjanStack))  //Unless this is a root graph node, there is an edge connecting its parent's component to its own
+						if(!stackIsEmpty(&callStack))  //Unless this is a root graph node, there is an edge connecting its parent's component to its own
 						{
+							
 							parent = stackVirtualPop(&callStack);
-							addEdgeToHypergraph(hypergraphEdges, parent, curNode);
+							hypEdges[0][hypEdgeCount]=parent;
+							hypEdges[1][hypEdgeCount]=curNode;
+							hypEdgeCount++;
+							if(hypEdgeCount==hypEdgesSize){
+								hypEdgesSize*=2;
+								hypEdges[0]=realloc(hypEdges[0],hypEdgesSize*sizeof(int));
+								hypEdges[1]=realloc(hypEdges[1],hypEdgesSize*sizeof(int));
+							}
 						}
 					}
 					continue;
@@ -91,7 +102,7 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 				else  //If there are more children to be added, go to the next list node
 				{
 					lastVisitedListNode[curNode] = listNode->nextListNode;
-					lastVisitedNeighbor[curNode] = 0;
+					lastVisitedNeighbor[curNode] = -1;
 				}
 			}
 			
@@ -103,10 +114,21 @@ SCC *estimateStronglyConnectedComponents(Buffer *outBuffer, NodeIndex* outIndex,
 			}
 			else if(index[neighbor] == CONNECTED)  //If the child has been put in a component, there is an edge connecting this node's component to the child's
 			{
-				addEdgeToHypergraph(hypergraphEdges, curNode, neighbor);
+				hypEdges[0][hypEdgeCount]=curNode;
+				hypEdges[1][hypEdgeCount]=neighbor;
+				hypEdgeCount++;
+				if(hypEdgeCount==hypEdgesSize){
+					hypEdgesSize*=2;
+					hypEdges[0]=realloc(hypEdges[0],hypEdgesSize*sizeof(int));
+					hypEdges[1]=realloc(hypEdges[1],hypEdgesSize*sizeof(int));
+				}
 			}
 			
 		}
+	}
+	
+	for(i=0;i<hypEdgeCount;i++){
+		addEdgeToHypergraph(hypergraphEdges, components->id_belongs_to_component[hypEdges[0][i]], components->id_belongs_to_component[hypEdges[1][i]]);
 	}
 	
 	deleteStack(&callStack);
@@ -127,7 +149,7 @@ OK_SUCCESS createSCC(SCC *components, int size)
 	components->components_count = 0;
 	components->arraySize = INITIAL_SCC_SIZE;
 	components->id_belongs_to_component = malloc(size * sizeof(int));
-	if(components->id_belongs_to_component == NULL)
+	if(components->id_belongs_to_component == NULL ||components->components == NULL)
 	{
 		printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
 		return NO;
@@ -162,7 +184,7 @@ void createComponent(SCC *components, int *index, stack *tarjanStack, ptr root)
 	if(components->components_count == components->arraySize -1)
 	{
 		components->arraySize *= 2;
-		components->components = realloc(components->components, components->arraySize);
+		components->components = realloc(components->components, components->arraySize*sizeof(Component*));
 		if(components->components == NULL)
 		{
 			printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);
@@ -184,7 +206,7 @@ void createComponent(SCC *components, int *index, stack *tarjanStack, ptr root)
 		if(newCC->included_nodes_count == newCC->arraySize)
 		{
 			newCC->arraySize *= 2;
-			newCC->included_node_ids = realloc(newCC->included_node_ids, newCC->arraySize);
+			newCC->included_node_ids = realloc(newCC->included_node_ids, newCC->arraySize*sizeof(int));
 			if(newCC->included_node_ids == NULL)
 			{
 				printError(COMPONENTS_STRUCTURE_ALLOCATION_FAIL);

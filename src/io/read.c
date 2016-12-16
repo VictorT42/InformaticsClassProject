@@ -148,7 +148,10 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	}
 
 	deleteVisited(&visited);
-	destroyConnectedComponents(components);
+	if(graphType == 'd')
+		destroyConnectedComponents(components);
+	else
+		deleteSCC(SCComponents);
 	deleteQueue(&forwardQueue);
 	deleteQueue(&backwardQueue);
 	

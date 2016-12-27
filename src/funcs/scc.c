@@ -144,6 +144,7 @@ void deleteSCC(SCC *components)
 		free((components->components[i])->included_node_ids);
 		free(components->components[i]);
 	}
+	free(components->components);
 	free(components);
 	return;
 }

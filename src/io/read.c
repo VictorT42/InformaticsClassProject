@@ -151,7 +151,10 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	if(graphType == 'd')
 		destroyConnectedComponents(components);
 	else
+	{
+		destroyGrailIndex(grail);
 		deleteSCC(SCComponents);
+	}
 	deleteQueue(&forwardQueue);
 	deleteQueue(&backwardQueue);
 	

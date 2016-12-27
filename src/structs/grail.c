@@ -30,6 +30,9 @@ Hypergraph *buildHypergraph(HypergraphEdges *hypergraphEdges, SCC* components)
 		
 	}
 	
+	free(hypergraphEdges->outNode);
+	free(hypergraphEdges->inNode);
+	
 	return hypergraph;
 	
 }
@@ -150,6 +153,12 @@ GrailIndex *buildGrailIndex(Hypergraph *hypergraph, SCC* components)
 	}
 	
 	deleteStack(&callStack);
+	free(lastVisitedListNode);
+	free(lastVisitedNeighbor);
+	
+	destroyBuffer(hypergraph->buffer);
+	destroyNodeIndex(hypergraph->index);
+	free(hypergraph);
 	
 	return grail;
 	

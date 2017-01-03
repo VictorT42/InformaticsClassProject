@@ -8,7 +8,10 @@
 #include "../../headers/print.h"
 #include "../../headers/read.h"
 #include "../../headers/hash.h"
+#include "../../headers/wcc.h"
+#include "../../headers/scc.h"
 
+#define TYPE 's'
 void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *inIndex, HashTablesArray *hashStruct)
 {
 	int inNode, outNode;
@@ -17,6 +20,16 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	int pathLength;
 	queue forwardQueue, backwardQueue;
 	BFSVisitedData visited;
+	CC *components;
+	SCC *SCComponents;
+	HypergraphEdges hypergraphEdges;
+	Hypergraph *hypergraph;
+	GrailIndex *grail;
+	GRAIL_ANSWER answer;
+	int outMinCC, inMinCC;
+	int usedUpdateIndex;
+	float metric;
+	char graphType = TYPE;
 
 	while(1)
 	{	
@@ -33,8 +46,20 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 
 		add(outBuffer, inBuffer, outIndex, inIndex, hashStruct, outNode, inNode);
 
-	}fprintf(stderr,"Done with graph\n");
-
+	}
+	
+	if(graphType == 's')
+	{
+		createHypergraphEdges(&hypergraphEdges);
+		SCComponents = estimateStronglyConnectedComponents(outBuffer, outIndex, &hypergraphEdges);
+		hypergraph = buildHypergraph(&hypergraphEdges, SCComponents);
+		grail = buildGrailIndex(hypergraph, SCComponents);
+	}
+	else
+	{
+		components = estimateConnectedComponents(outBuffer, outIndex, inBuffer, inIndex);
+	}
+	
 	initializeQueue(&forwardQueue, INITIAL_QUEUE_SIZE);
 	initializeQueue(&backwardQueue, INITIAL_QUEUE_SIZE);
 	initializeVisited(&visited, outIndex->arraySize);
@@ -47,22 +72,73 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 		operation = line[0];
 
 		if(operation == 'F')
-			continue;
+		{
+			if(graphType == 'd')
+			{
+				metric = ((float)components->updateQueries)/components->queries;
+				if(metric > CC_METRIC)
+				{
+					rebuildIndexes(components, outBuffer, outIndex, inBuffer, inIndex);
+				}
+			}
+		}
 		else
 		{
 			scanf("%d %d", &outNode, &inNode);
 			if(operation == 'Q')
 			{
-				cleanQueue(&forwardQueue);
-				cleanQueue(&backwardQueue);
+				//Check the CC
+				if(graphType == 's')
+				{
+					if(SCComponents->id_belongs_to_component[outNode] == SCComponents->id_belongs_to_component[inNode])
+						pathLength = estimateShortestPathStronglyConnectedComponents(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue, SCComponents);
+					else
+					{
+						answer = isReachableGrailIndex(grail, outNode, inNode);
+						if(answer == NO)
+							pathLength = -1;
+						else
+							pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue, NULL);
+					}
+				}
+				else
+				{
+					usedUpdateIndex = 0;
+					outMinCC = components->updateIndex[components->ccIndex[outNode]];
+					inMinCC = components->updateIndex[components->ccIndex[inNode]];
+					
+					if(outMinCC == inMinCC && components->ccIndex[outNode] != components->ccIndex[inNode])
+						usedUpdateIndex = 1;
+					
+					while(outMinCC != components->updateIndex[outMinCC])
+					{
+						outMinCC = components->updateIndex[outMinCC];
+						usedUpdateIndex = 1;
+					}
+					while(inMinCC != components->updateIndex[inMinCC])
+					{
+						inMinCC = components->updateIndex[inMinCC];
+						usedUpdateIndex = 1;
+					}
+					
+					if(usedUpdateIndex)
+						components->updateQueries++;
+					components->queries++;
 
-				pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue);
+					if(outMinCC != inMinCC)
+						pathLength = -1;
+					else
+						pathLength = bBFS(outIndex, outBuffer, inIndex, inBuffer, outNode, inNode, &visited, &forwardQueue, &backwardQueue, NULL);
+				}
 
 				printf("%d\n", pathLength);
 			}
 			else if(operation == 'A')
 			{
+				if(graphType == 's')
+					continue;
 				add(outBuffer, inBuffer, outIndex, inIndex, hashStruct, outNode, inNode);
+				insertNewEdge(components, outNode, inNode);
 			}
 			else
 			{
@@ -72,6 +148,13 @@ void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeInd
 	}
 
 	deleteVisited(&visited);
+	if(graphType == 'd')
+		destroyConnectedComponents(components);
+	else
+	{
+		destroyGrailIndex(grail);
+		deleteSCC(SCComponents);
+	}
 	deleteQueue(&forwardQueue);
 	deleteQueue(&backwardQueue);
 	

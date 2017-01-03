@@ -20,6 +20,10 @@
 #define HASH_TABLE_REALLOCATION_FAIL 12
 #define BFS_VISITED_DATA_FAIL 13
 #define QUEUE_OUT_OF_BOUNDS_FAIL 14
+#define STACK_ALLOCATION_FAIL 15
+#define STACK_REALLOCATION_FAIL 16
+#define STACK_POP_FAIL 17
+#define COMPONENTS_STRUCTURE_ALLOCATION_FAIL 18
 
 void printGraph(NodeIndex *index, Buffer *buffer);
 void printError(int);

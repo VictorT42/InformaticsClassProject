@@ -11,7 +11,7 @@
 #include "../../headers/wcc.h"
 #include "../../headers/scc.h"
 
-#define TYPE 's'
+#define TYPE 'd'
 void readInput(Buffer *outBuffer, Buffer *inBuffer, NodeIndex *outIndex, NodeIndex *inIndex, HashTablesArray *hashStruct)
 {
 	int inNode, outNode;

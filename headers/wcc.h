@@ -8,7 +8,7 @@
 #define INITIAL_STACK_SIZE 1000000
 #define INITIAL_CONNECTION_ARRAY_SIZE 32
 #define UNDISCOVERED -1
-#define CC_METRIC 0.001
+#define CC_METRIC 0.1
 
 void initializeStack(stack *s);
 void stackPush(stack *s, int nodeID);

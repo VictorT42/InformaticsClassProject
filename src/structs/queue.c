@@ -26,7 +26,7 @@ void push(queue *q, int nodeID)
 {	
 	q->array[q->end] = nodeID;
 	
-	if((q->end == q->start-1) || (q->end==q->size && q->start==0))  //If the queue is full and needs more space
+	if((q->end == q->start-1) || (q->end == q->size -1 && q->start == 0))  //If the queue is full and needs more space
 	{
 		int newSize = q->size*2;
 
@@ -37,6 +37,7 @@ void push(queue *q, int nodeID)
 			memcpy(q->array + q->size, q->array, q->end*sizeof(int));
 			q->end = q->start + q->end +1;
 		}
+		q->size = q->newSize;
 	}
 	
 	q->end++;

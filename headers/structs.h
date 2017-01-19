@@ -80,4 +80,17 @@ typedef struct stack
 	int end;
 } stack;
 
+typedef struct jobQueue{
+	job *array;
+	int size;
+	ptr start;
+	ptr end;
+} jobQueue;
+
+struct JobScheduler{
+	int execution_threads;
+	jobQueue* q;
+	p_thread_t* tids;
+}
+
 #endif

@@ -1,6 +1,6 @@
 OBJ =	obj/index.o obj/buffer.o obj/read.o obj/main.o obj/bfs.o obj/print.o obj/hash.o obj/wcc.o obj/queue.o obj/stack.o obj/scc.o obj/grail.o
 HDR =	headers/structs.h headers/index.h headers/buffer.h headers/read.h headers/bfs.h headers/print.h headers/hash.h headers/wcc.h headers/scc.h
-CC  =	gcc -g3 -Wall
+CC  =	gcc -g3 -Wall -pthread
 OUT =	graph
 
 all: $(HDR) $(OBJ)
